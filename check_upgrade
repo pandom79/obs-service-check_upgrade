@@ -1,0 +1,312 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+# A simple script which check if any newer versions exist
+#
+# (C) 2021 by Domenico Panella <pandom79@gmail.com>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# See http://www.gnu.org/licenses/gpl-2.0.html for full license text.
+
+import argparse
+import logging
+import requests
+import re
+import os
+import os.path as path
+from html.parser import HTMLParser
+
+""" Global Variables """
+urlsrc = None
+regexurl = None
+regexver = None
+currentver = None
+separator = None
+outdir = None
+all_versions = []
+versions_found = []
+versions_found_str = []
+filename = "check_upgrade"
+
+""" Classes and methods """
+class MyHTMLParser(HTMLParser):
+
+    def __init__(self, p_url, p_ver):
+        super(MyHTMLParser, self).__init__()
+        self.p_url = p_url
+        self.p_ver = p_ver
+
+    def handle_starttag(self, tag, attrs):
+        for attr in attrs:
+            logging.debug("tag = %s", attr[0])
+            logging.debug("value = %s", attr[1])
+            if attr[1] is not None:
+                if self.p_url.search(attr[1]) is not None:
+                    logging.debug("Match url! %s", self.p_url.search(attr[1]))
+                    if self.p_ver.search(attr[1]) is not None:
+                        version = self.p_ver.search(attr[1]).group()
+                        logging.debug("Match ver! %s", version)
+                        if version not in all_versions:
+                            logging.debug("%s not exists : append!", version)
+                            all_versions.append(version)
+                            logging.debug("all_versions : %s", all_versions)
+                    else:
+                        print("Error in handle_starttag: Checks regexurl and regexver parameters values")
+                        exit(1)
+
+    def handle_data(self, data):
+        if data is not None:
+            logging.debug("data = %s", data)
+            if len(self.p_url.findall(data)) > 0:
+                logging.debug("Match url! %s", self.p_url.findall(data))
+                urls = self.p_url.findall(data)
+                for i in range(len(urls)):
+                    url = self.p_ver.search(urls[i]).group()
+                    if self.p_ver.search(url) is not None:
+                        version = self.p_ver.search(url).group()
+                        logging.debug("Match ver! %s", version)
+                        if version not in all_versions:
+                            logging.debug("%s not exists : append!", version)
+                            all_versions.append(version)
+                            logging.debug("all_versions : %s ", all_versions)
+                    else:
+                        print("Error in handle_data: Checks regexurl and regexver parameters values")
+                        exit(1)
+
+""" Functions """
+def compareValue(currentValue, value):
+    result = 0
+    logging.debug("Comparing the values ....")
+    if currentValue is None and value is not None and \
+            str(value).isnumeric() and int(value) != 0:
+        result = -1
+    else:
+        if currentValue is not None and value is not None:
+            length = len(currentValue)
+            if len(currentValue) < len(value):
+                length = len(value)
+            for i in range(length):
+                try:
+                    curValueChr = currentValue[i]
+                except:
+                    curValueChr = None
+                try:
+                    valueChr = value[i]
+                except:
+                    valueChr = None
+                logging.debug("curValueChr = %s", curValueChr)
+                logging.debug("valueChr = %s", valueChr)
+                if str(curValueChr).isnumeric() and str(valueChr).isnumeric():
+                    logging.debug("Both are numerics")
+                    if int(curValueChr) < int(valueChr):
+                        logging.debug("%s less than %s", curValueChr, valueChr)
+                        result = -1
+                        break;
+                    elif int(curValueChr) == int(valueChr):
+                        logging.debug("%s equal to %s", curValueChr, valueChr)
+                        result = 0
+                        continue
+                    elif int(curValueChr) > int(valueChr):
+                        logging.debug("%s major than %s", curValueChr, valueChr)
+                        result = 1
+                        break;
+                else:
+                    logging.debug("One of them is alphanumeric")
+                    if curValueChr is None and valueChr is not None:
+                        logging.debug("curValueChr is None!")
+                        result = -1
+                        break;
+                    elif curValueChr is not None and valueChr is not None and curValueChr < valueChr:
+                        logging.debug("%s less than %s! Return -1", curValueChr, valueChr)
+                        result = -1
+                        break;
+                    elif curValueChr is not None and valueChr is None:
+                        result = 0
+                        break
+    logging.debug("Return %s !", str(result))
+    return result
+
+def compareVersion(listCurrentVer, listVer):
+    logging.debug("\n\nComparing the version ....")
+    logging.debug("%s and %s", listCurrentVer, listVer)
+    result = 0
+    lenght = len(listCurrentVer)
+    if len(listCurrentVer) < len(listVer):
+        lenght = len(listVer)
+    logging.debug("Length = %s", lenght)
+    for i in range(lenght):
+        try:
+            currentValue = listCurrentVer[i]
+        except:
+            currentValue = None
+        try:
+            value = listVer[i]
+        except:
+            value = None
+        logging.debug("current value = %s", currentValue)
+        logging.debug("value = %s", value)
+        """ If both are number """
+        if str(currentValue).isnumeric() and str(value).isnumeric():
+            logging.debug("Both are numerics")
+            if int(currentValue) < int(value):
+                result = -1
+                break
+            elif int(currentValue) == int(value):
+                logging.debug("Both are equal, go to the next ...")
+                continue
+            else:
+                result = 1
+                break
+        else:
+            logging.debug("There are alphanumeric characters, let's go to compare the value ...")
+            result = compareValue(currentValue, value)
+            break
+
+    logging.debug("Return %s !", str(result))
+    return result
+
+def findNextVersions():
+    listCurrentVer = currentver.split(separator)
+    for ver in all_versions:
+        value = ""
+        listVer = ver.split(separator)
+        if compareVersion(listCurrentVer, listVer) == -1:
+            logging.debug("Adding %s to the versions found ", listVer)
+            versions_found.append(listVer)
+
+def handle_file(operation):
+    """ Go up one level to match the package path """
+    one_up = path.abspath(path.join(outdir, "../"))
+    outFileName = one_up + "//" + filename
+    if operation == "create":
+        outFile = open(outFileName, "w")
+        """ Check if the file is created """
+        if not path.exists(outFileName):
+            print("Error: Unable to create ", filename, "file!")
+            exit(1)
+        else:
+            for i in range(len(versions_found_str)):
+                outFile.write(versions_found_str[i] + "\n")
+            outFile.close()
+    elif operation == "remove":
+        if path.exists(outFileName):
+            os.remove(outFileName)
+            """ Check if the file is removed """
+            if path.exists(outFileName):
+                print("Error: Unable to remove ", filename, "file!")
+                exit(1)
+
+def create_new_list():
+    version = ""
+    for i in range(len(versions_found)):
+        version = versions_found[i]
+        value = ""
+        for j in range(len(version)):
+            value += version[j]
+            if j < (len(version) - 1):
+                value += separator
+        versions_found_str.append(value)
+
+def sort_versions():
+    n = len(versions_found)
+    for i in range(n - 1):
+        for j in range(0, n - i - 1):
+            if compareVersion(versions_found[j + 1], versions_found[j]) == -1:
+                versions_found_swap = versions_found[j]
+                versions_found[j] = versions_found[j + 1]
+                versions_found[j + 1] = versions_found_swap
+
+""" Main """
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Open Build Service source service "check_upgrade".'
+        'Used to retrieve the newer a package versions.')
+    parser.add_argument('--outdir', required=True,
+                        help='output directory of the package')
+    parser.add_argument('--urlsrc', required=True,
+                        help='The url which has to parsed.')
+    parser.add_argument('--regexurl', required=True,
+                        help='The regular expression which extracts the links to the versions')
+    parser.add_argument('--regexver', required=True,
+                        help='The regular expression which extracts the package version')
+    parser.add_argument('--currentver', required=True,
+                        help='the current version which pattern have to match <regexver> value.')
+    parser.add_argument('--separator', default='.',
+                        help='the character which separates the values (version, sub version ...) in '
+                        'the string which makes up the package version.')
+    args = vars(parser.parse_args())
+
+    outdir = args['outdir']
+    urlsrc = args['urlsrc']
+    regexurl = args['regexurl']
+    regexver = args['regexver']
+    currentver = args['currentver']
+    separator = args['separator']
+
+    if os.environ.get('DEBUG_CHECK_UPGRADE') == "1":
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    logging.debug("outdir = %s", outdir)
+    logging.debug("urlsrc = %s", urlsrc)
+    logging.debug("regexurl = %s", regexurl)
+    logging.debug("regexver = %s", regexver)
+    logging.debug("currentver = %s", currentver)
+    logging.debug("separator = %s", separator)
+
+    """ Check input """
+    p_url = re.compile(regexurl)
+    p_ver = re.compile(regexver)
+    if not outdir:
+        print("Error: no outdir specified!")
+        exit(1)
+    if not p_ver.match(currentver):
+        print(f"Error: The current version '{currentver}' doesn't match the regex pattern '{regexver}'!")
+        exit(1)
+    else:
+        """ We cannot use start string '^' and end string '$' character otherwise
+         the parser will fail. Check manually if the whole word is matched """
+        if len(p_ver.match(currentver).group()) != len(currentver):
+            print(f"Error: The current version '{currentver}' doesn't match the regex pattern '{regexver}'!")
+            exit(1)
+
+    """ GET Http request """
+    headers = {'Accept': 'text/html'}
+    print("Executing the GET http request for \"" + urlsrc + "\" ....\n")
+    response = requests.get(urlsrc, headers=headers)
+    logging.debug("Http response = %s", response.text)
+    logging.debug("Http response status code = %s", response.status_code)
+    if (response.status_code == 404):
+        print(f"Error: Unable contact the url '{urlsrc}'.\nCheck 'urlsrc' parameter value.")
+        exit(1)
+
+    """ Delete 'filename' file if exists """
+    handle_file("remove")
+
+    """ Parsing the response extracting the data according 'regexurl' pattern """
+    parser = MyHTMLParser(p_url, p_ver)
+    print("Parsing the http response ....")
+    parser.feed(response.text);
+    if len(all_versions) == 0:
+        print("\nNothing found! Check the 'urlsrc' and 'regexurl' parameters values.")
+    else:
+        logging.debug("\n\nThe following versions have been found = \n%s", all_versions)
+        """ Let's go to find newer versions """
+        findNextVersions()
+        """ Sorting versions """
+        logging.debug("\n\nSorting the versions ...")
+        sort_versions()
+        """ Create a list of one string """
+        create_new_list()
+        """ Print all the newer versions than current version """
+        print("\nCurrent version :", currentver)
+        if len(versions_found_str) > 0:
+            print("Available the following versions for upgrade :")
+            for i in range(len(versions_found_str)):
+                print(versions_found_str[i])
+            """ Create the 'filename' file """
+            handle_file("create")
+        else:
+            print("There are no newer versions!")

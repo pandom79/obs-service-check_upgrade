@@ -1,0 +1,20 @@
+<service name="check_upgrade">
+  <summary>Check the availability of newer versions</summary>
+  <description>Check from a web page if a newer version exists.</description>
+  <parameter name="urlsrc">
+    <description>Set the url which have to parsed.</description>
+  </parameter>
+  <parameter name="regexurl">
+    <description>Set the regular expression which extracts the links to the versions.</description>
+  </parameter>
+  <parameter name="regexver">
+    <description>Set the regular expression which extracts the package version.</description>
+  </parameter>
+  <parameter name="currentver">
+    <description>Set the current version which pattern have to match 'regexver' value.</description>
+  </parameter>
+  <parameter name="separator">
+    <description>Set the character which separates the values (major version, minor version ...) in the string which makes up the package version.</description>
+  </parameter>
+</service>
+

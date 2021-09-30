@@ -1,0 +1,59 @@
+<!--
+<services>
+    <service name="check_upgrade" mode="disabled">
+        <param name="urlsrc">https://archive.eclipse.org/eclipse/downloads/</param>
+        <param name="regexurl">^drops[\w]*/R-[\d]+[.][\w]*[.]*[\w]*-[\w]+/$</param>
+        <param name="regexver">[\d]+[.][\w]*[.]*[\w]*</param>
+        <param name="currentver">4.7.3</param>
+    </service>
+</services>
+
+<services>
+    <service name="check_upgrade" mode="disabled">
+        <param name="urlsrc">https://github.com/openSUSE/open-build-service/releases</param>
+        <param name="regexurl">^/openSUSE/open-build-service/archive/refs/tags/[\d].[\d]+.[\d]+.tar.gz$</param>
+        <param name="regexver">[\d].[\d]+.[\d]+</param>
+        <param name="currentver">2.8.0</param>
+    </service>
+</services>
+
+<services>
+    <service name="check_upgrade" mode="disabled">
+        <param name="urlsrc">https://serviio.org/download</param>
+        <param name="regexurl">https://download.serviio.org/releases/serviio-[\d]+[\w]*(.[\d]+[\w]*)?(.[\d]+[\w]*)?-linux.tar.gz</param>
+        <param name="regexver">[\d]+[\w]*(.[\d]+[\w]*)?(.[\d]+[\w]*)?</param>
+        <param name="currentver">2.10a</param>
+    </service>
+</services>
+
+<services>
+    <service name="check_upgrade" mode="disabled">
+        <param name="urlsrc">https://pypi.org/project/github-api-python/#history</param>
+        <param name="regexurl">^/project/github-api-python/[\d]+[\w]*(.[\d]+[\w]*)?(.[\d]+[\w]*)?/$</param>
+        <param name="regexver">[\d]+[\w]*(.[\d]+[\w]*)?(.[\d]+[\w]*)?</param>
+        <param name="currentver">0.1.1a</param>
+    </service>
+</services>
+
+<services>
+    <service name="check_upgrade" mode="disabled">
+        <param name="urlsrc">https://www.jetbrains.com/pycharm/whatsnew/</param>
+        <param name="regexurl">/pycharm/whatsnew/[\d]+-[\d]+/</param>
+        <param name="regexver">[\d]+-[\d]+</param>
+        <param name="currentver">2019-1</param>
+        <param name="separator">-</param>
+    </service>
+</services>
+
+<services>
+    <service name="check_upgrade" mode="disabled">
+        <param name="urlsrc">https://www.jetbrains.com/idea/whatsnew/</param>
+        <param name="regexurl">/idea/whatsnew/[\d]+-[\d]/</param>>
+        <param name="regexver">[\d]+-*[\w]*</param>
+        <param name="currentver">2018-4</param>
+        <param name="separator">-</param>
+    </service>
+</services>
+
+-->
+
