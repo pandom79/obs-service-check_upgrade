@@ -77,62 +77,98 @@ class MyHTMLParser(HTMLParser):
                         exit(1)
 
 """ Functions """
+
+""" Get numeric or alpha part of an alphanumeric string """
+def getPart(type, value):
+    result_str = ""
+    if value:
+        length = len(value)
+        for i in range(length):
+            value_str = str(value[i])
+            if type == "numeric":
+                if value_str.isdigit():
+                    result_str += value_str
+            elif type == "alpha":
+                if value_str.isalpha():
+                    result_str += value_str
+    return result_str
+
+""" Return True if 'currentValue' less than 'value', False otherwise """
 def compareValue(currentValue, value):
-    result = 0
+    result = False
     logging.debug("Comparing the values ....")
-    if currentValue is None and value is not None and \
-            str(value).isnumeric() and int(value) != 0:
-        result = -1
+    logging.debug("currentValue = %s", currentValue)
+    logging.debug("value = %s", value)
+    if not currentValue and value and str(value).isnumeric() and int(value) != 0:
+        logging.debug("current value is none! Value is not None and != 0, exiting ....")
+        result = True
+    elif currentValue and not value:
+        logging.debug("value is none! currentValue is not None, exiting ....")
+        result = False
     else:
-        if currentValue is not None and value is not None:
-            length = len(currentValue)
-            if len(currentValue) < len(value):
-                length = len(value)
-            for i in range(length):
-                try:
-                    curValueChr = currentValue[i]
-                except:
-                    curValueChr = None
-                try:
-                    valueChr = value[i]
-                except:
-                    valueChr = None
-                logging.debug("curValueChr = %s", curValueChr)
-                logging.debug("valueChr = %s", valueChr)
-                if str(curValueChr).isnumeric() and str(valueChr).isnumeric():
-                    logging.debug("Both are numerics")
-                    if int(curValueChr) < int(valueChr):
-                        logging.debug("%s less than %s", curValueChr, valueChr)
-                        result = -1
-                        break;
-                    elif int(curValueChr) == int(valueChr):
-                        logging.debug("%s equal to %s", curValueChr, valueChr)
-                        result = 0
-                        continue
-                    elif int(curValueChr) > int(valueChr):
-                        logging.debug("%s major than %s", curValueChr, valueChr)
-                        result = 1
-                        break;
-                else:
-                    logging.debug("One of them is alphanumeric")
-                    if curValueChr is None and valueChr is not None:
-                        logging.debug("curValueChr is None!")
-                        result = -1
-                        break;
-                    elif curValueChr is not None and valueChr is not None and curValueChr < valueChr:
-                        logging.debug("%s less than %s! Return -1", curValueChr, valueChr)
-                        result = -1
-                        break;
-                    elif curValueChr is not None and valueChr is None:
-                        result = 0
+        if currentValue and value:
+            numPartCurValue = getPart("numeric", currentValue)
+            numPartValue = getPart("numeric", value)
+            logging.debug("Comparing the numeric part ....")
+            logging.debug("numPartCurValue of %s = %s", currentValue, numPartCurValue)
+            logging.debug("numPartValue of %s = %s", value, numPartValue)
+            if int(numPartCurValue) < int(numPartValue):
+                logging.debug("%s less than %s, exiting ....", numPartCurValue, numPartValue)
+                result = True
+            elif int(numPartCurValue) > int(numPartValue):
+                logging.debug("%s major than %s, exiting ....", numPartCurValue, numPartValue)
+                result = False
+            elif int(numPartCurValue) == int(numPartValue):
+                logging.debug("%s is equal to %s", numPartCurValue, numPartValue)
+                logging.debug("Comparing the alpha part ....")
+                alphaPartCurValue = getPart("alpha", currentValue)
+                alphaPartValue = getPart("alpha", value)
+                length = len(alphaPartCurValue)
+                if len(alphaPartCurValue) < len(alphaPartValue):
+                    length = len(alphaPartValue)
+                logging.debug("Length of alpha part = %s ", length)
+                for i in range(length):
+                    try:
+                        alphaPartCurValueChr = alphaPartCurValue[i]
+                    except:
+                        alphaPartCurValueChr = None
+                    try:
+                        alphaPartValueChr = alphaPartValue[i]
+                    except:
+                        alphaPartValueChr = None
+                    if not alphaPartCurValueChr and alphaPartValueChr:
+                        logging.debug("alphaPartCurValueChr is None")
+                        logging.debug("alphaPartValueChr = %s", alphaPartValueChr)
+                        logging.debug("%s less than %s, exiting ....", alphaPartCurValueChr, alphaPartValueChr)
+                        result = True
                         break
-    logging.debug("Return %s !", str(result))
+                    elif alphaPartCurValueChr and not alphaPartValueChr:
+                        logging.debug("alphaPartCurValueChr = %s", alphaPartCurValueChr)
+                        logging.debug("alphaPartValueChr is None")
+                        logging.debug("%s major than %s, exiting ....", alphaPartCurValueChr, alphaPartValueChr)
+                        result = False
+                        break
+                    elif alphaPartCurValueChr and alphaPartValueChr:
+                        logging.debug("alphaPartCurValueChr = %s", alphaPartCurValueChr)
+                        logging.debug("alphaPartValueChr = %s", alphaPartValueChr)
+                        if alphaPartCurValueChr < alphaPartValueChr:
+                            logging.debug("%s less than %s, exiting ....", alphaPartCurValueChr, alphaPartValueChr)
+                            result = True
+                            break;
+                        elif alphaPartCurValueChr == alphaPartValueChr:
+                            logging.debug("%s equal to %s, go to the next ....", alphaPartCurValueChr, alphaPartValueChr)
+                            continue
+                        elif alphaPartCurValueChr > alphaPartValueChr:
+                            logging.debug("%s major than %s, exiting ....", alphaPartCurValueChr, alphaPartValueChr)
+                            break;
+    logging.debug("Return compareValue = %s !", str(result))
     return result
 
+""" Return True if 'listCurrentVer' less than 'listVer', False otherwise """
 def compareVersion(listCurrentVer, listVer):
     logging.debug("\n\nComparing the version ....")
     logging.debug("%s and %s", listCurrentVer, listVer)
-    result = 0
+    result = False
     lenght = len(listCurrentVer)
     if len(listCurrentVer) < len(listVer):
         lenght = len(listVer)
@@ -152,28 +188,28 @@ def compareVersion(listCurrentVer, listVer):
         if str(currentValue).isnumeric() and str(value).isnumeric():
             logging.debug("Both are numerics")
             if int(currentValue) < int(value):
-                result = -1
+                logging.debug("%s less than %s, exiting ....", currentValue, value)
+                result = True
                 break
             elif int(currentValue) == int(value):
                 logging.debug("Both are equal, go to the next ...")
                 continue
             else:
-                result = 1
+                logging.debug("%s major than %s, exiting ....", currentValue, value)
                 break
         else:
             logging.debug("There are alphanumeric characters, let's go to compare the value ...")
             result = compareValue(currentValue, value)
             break
 
-    logging.debug("Return %s !", str(result))
+    logging.debug("Return compareVersion = %s !", str(result))
     return result
 
 def findNextVersions():
     listCurrentVer = currentver.split(separator)
     for ver in all_versions:
-        value = ""
         listVer = ver.split(separator)
-        if compareVersion(listCurrentVer, listVer) == -1:
+        if compareVersion(listCurrentVer, listVer):
             logging.debug("Adding %s to the versions found ", listVer)
             versions_found.append(listVer)
 
@@ -214,13 +250,49 @@ def sort_versions():
     n = len(versions_found)
     for i in range(n - 1):
         for j in range(0, n - i - 1):
-            if compareVersion(versions_found[j + 1], versions_found[j]) == -1:
+            if compareVersion(versions_found[j + 1], versions_found[j]):
                 versions_found_swap = versions_found[j]
                 versions_found[j] = versions_found[j + 1]
                 versions_found[j + 1] = versions_found_swap
 
+def check_input(p_ver):
+    """ Outdir """
+    if not outdir:
+        print("Error: no outdir specified!")
+        exit(1)
+    """ Current version """
+    if currentver:
+        version_list = currentver.split(separator)
+        logging.debug("current version list = %s", version_list)
+        for i in range(len(version_list)):
+            value = version_list[i]
+            logging.debug("value = %s", value)
+            logging.debug("value[0] = %s", value[0])
+            """ Check first character """
+            if not str(value[0]).isdigit():
+                print(f"Error: '{currentver}' --> '{value}'")
+                print("The values which compose the software version can't start with a non-numeric character!")
+                exit(1)
+            """ Check weird characters """
+            for j in range(len(value)):
+                if not str(value[j]).isdigit() and not str(value[j]).isalpha():
+                    print(f"Error: '{currentver}' --> '{value}'")
+                    print("The values which compose the software version can only contain numbers and letters!")
+                    exit(1)
+        """ Check last character """
+        if not str(currentver[len(currentver) - 1]).isdigit() and not str(currentver[len(currentver) - 1]).isalpha():
+            print(f"Error: '{currentver}'")
+            print("The software version can't end with a non-alphanumeric character!")
+            exit(1)
+        """ Check regex """
+        re_currentver = p_ver.match(currentver)
+        if not re_currentver:
+            print(f"Error : The current version '{currentver}' doesn't match the regex pattern '{regexver}'!")
+            exit(1)
+
 """ Main """
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser(
         description='Open Build Service source service "check_upgrade".'
         'Used to retrieve the newer a package versions.')
@@ -235,7 +307,7 @@ if __name__ == '__main__':
     parser.add_argument('--currentver', required=True,
                         help='the current version which pattern have to match <regexver> value.')
     parser.add_argument('--separator', default='.',
-                        help='the character which separates the values (version, sub version ...) in '
+                        help='the character which separates the values (major version, minor version, etc ...) in '
                         'the string which makes up the package version.')
     args = vars(parser.parse_args())
 
@@ -256,21 +328,12 @@ if __name__ == '__main__':
     logging.debug("currentver = %s", currentver)
     logging.debug("separator = %s", separator)
 
-    """ Check input """
     p_url = re.compile(regexurl)
     p_ver = re.compile(regexver)
-    if not outdir:
-        print("Error: no outdir specified!")
-        exit(1)
-    if not p_ver.match(currentver):
-        print(f"Error: The current version '{currentver}' doesn't match the regex pattern '{regexver}'!")
-        exit(1)
-    else:
-        """ We cannot use start string '^' and end string '$' character otherwise
-         the parser will fail. Check manually if the whole word is matched """
-        if len(p_ver.match(currentver).group()) != len(currentver):
-            print(f"Error: The current version '{currentver}' doesn't match the regex pattern '{regexver}'!")
-            exit(1)
+
+    """ Check input values """
+    logging.debug("\n\nChecking input values ....")
+    check_input(p_ver)
 
     """ GET Http request """
     headers = {'Accept': 'text/html'}

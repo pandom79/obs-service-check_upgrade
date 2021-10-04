@@ -1,6 +1,6 @@
 <!--
 <services>
-    <service name="check_upgrade" mode="disabled">
+    <service name="check_upgrade">
         <param name="urlsrc">https://archive.eclipse.org/eclipse/downloads/</param>
         <param name="regexurl">^drops[\w]*/R-[\d]+[.][\w]*[.]*[\w]*-[\w]+/$</param>
         <param name="regexver">[\d]+[.][\w]*[.]*[\w]*</param>
@@ -9,7 +9,7 @@
 </services>
 
 <services>
-    <service name="check_upgrade" mode="disabled">
+    <service name="check_upgrade">
         <param name="urlsrc">https://github.com/openSUSE/open-build-service/releases</param>
         <param name="regexurl">^/openSUSE/open-build-service/archive/refs/tags/[\d].[\d]+.[\d]+.tar.gz$</param>
         <param name="regexver">[\d].[\d]+.[\d]+</param>
@@ -18,7 +18,7 @@
 </services>
 
 <services>
-    <service name="check_upgrade" mode="disabled">
+    <service name="check_upgrade">
         <param name="urlsrc">https://serviio.org/download</param>
         <param name="regexurl">https://download.serviio.org/releases/serviio-[\d]+[\w]*(.[\d]+[\w]*)?(.[\d]+[\w]*)?-linux.tar.gz</param>
         <param name="regexver">[\d]+[\w]*(.[\d]+[\w]*)?(.[\d]+[\w]*)?</param>
@@ -27,7 +27,7 @@
 </services>
 
 <services>
-    <service name="check_upgrade" mode="disabled">
+    <service name="check_upgrade">
         <param name="urlsrc">https://pypi.org/project/github-api-python/#history</param>
         <param name="regexurl">^/project/github-api-python/[\d]+[\w]*(.[\d]+[\w]*)?(.[\d]+[\w]*)?/$</param>
         <param name="regexver">[\d]+[\w]*(.[\d]+[\w]*)?(.[\d]+[\w]*)?</param>
@@ -36,7 +36,7 @@
 </services>
 
 <services>
-    <service name="check_upgrade" mode="disabled">
+    <service name="check_upgrade">
         <param name="urlsrc">https://www.jetbrains.com/pycharm/whatsnew/</param>
         <param name="regexurl">/pycharm/whatsnew/[\d]+-[\d]+/</param>
         <param name="regexver">[\d]+-[\d]+</param>
@@ -46,7 +46,7 @@
 </services>
 
 <services>
-    <service name="check_upgrade" mode="disabled">
+    <service name="check_upgrade">
         <param name="urlsrc">https://www.jetbrains.com/idea/whatsnew/</param>
         <param name="regexurl">/idea/whatsnew/[\d]+-[\d]/</param>>
         <param name="regexver">[\d]+-*[\w]*</param>
@@ -55,5 +55,42 @@
     </service>
 </services>
 
+<services>
+    <service name="check_upgrade">
+        <param name="urlsrc">https://github.com/jellyfin/jellyfin/releases</param>
+        <param name="regexurl">/jellyfin/jellyfin/archive/refs/tags/v[\d]+.[\d]+.[\d].tar.gz</param>>
+        <param name="regexver">[\d]+.[\d]+.[\d]</param>
+        <param name="currentver">10.7.3</param>
+    </service>
+</services>
+
+<services>
+    <service name="check_upgrade">
+        <param name="urlsrc">https://github.com/nativefier/nativefier/releases</param>
+        <param name="regexurl">/nativefier/nativefier/archive/refs/tags/v[\d]+.[\d]+.[\d].tar.gz</param>>
+        <param name="regexver">[\d]+.[\d]+.[\d]</param>
+        <param name="currentver">44.0.7</param>
+    </service>
+</services>
+
+
+<services>
+    <service name="check_upgrade">
+        <param name="urlsrc">https://github.com/seebye/ueberzug/releases</param>
+        <param name="regexurl">/seebye/ueberzug/archive/refs/tags/[\d]+.[\d]+.[\d].tar.gz</param>>
+        <param name="regexver">[\d]+.[\d]+.[\d]</param>
+        <param name="currentver">18.1.7</param>
+    </service>
+</services>
+
 -->
+
+<services>
+    <service name="check_upgrade">
+        <param name="urlsrc">https://github.com/seebye/ueberzug/releases</param>
+        <param name="regexurl">/seebye/ueberzug/archive/refs/tags/[\d]+.[\d]+.[\d].tar.gz</param>>
+        <param name="regexver">[\d]+.[\d]+.[\d]</param>
+        <param name="currentver">18.1.7</param>
+    </service>
+</services>
 
