@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3.6
 # -*- coding: utf-8 -*-
 
 # A simple script which check if any newer versions exist
@@ -29,7 +29,7 @@ outdir = None
 all_versions = []
 versions_found = []
 versions_found_str = []
-filename = "check_upgrade"
+filename = "newer_versions"
 
 """ Classes and methods """
 class MyHTMLParser(HTMLParser):
@@ -214,9 +214,7 @@ def findNextVersions():
             versions_found.append(listVer)
 
 def handle_file(operation):
-    """ Go up one level to match the package path """
-    one_up = path.abspath(path.join(outdir, "../"))
-    outFileName = one_up + "//" + filename
+    outFileName = path.abspath(outdir + "//" + filename)
     if operation == "create":
         outFile = open(outFileName, "w")
         """ Check if the file is created """
@@ -224,9 +222,16 @@ def handle_file(operation):
             print("Error: Unable to create ", filename, "file!")
             exit(1)
         else:
-            for i in range(len(versions_found_str)):
-                outFile.write(versions_found_str[i] + "\n")
+            length = len(versions_found_str)
+            for i in range(length):
+                outFile.write(versions_found_str[i])
+                if i < (length - 1):
+                    outFile.write("\n")
             outFile.close()
+            """ Check if the file is closed """
+            if not outFile.closed:
+                print(f"Error: Unable to close '{filename}' file!")
+                exit(1)
     elif operation == "remove":
         if path.exists(outFileName):
             os.remove(outFileName)
