@@ -1,4 +1,4 @@
-#!/usr/bin/python3.6
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 # A simple script which check if any newer versions exist
@@ -99,9 +99,10 @@ def compareValue(currentValue, value):
     logging.debug("Comparing the values ....")
     logging.debug("currentValue = %s", currentValue)
     logging.debug("value = %s", value)
-    if not currentValue and value and str(value).isnumeric() and int(value) != 0:
-        logging.debug("current value is none! Value is not None and != 0, exiting ....")
-        result = True
+    if not currentValue and value:
+        if (value.isnumeric() and int(value) != 0) or not value.isnumeric():
+            logging.debug("current value is none! Value is not None and (!= 0 or not numeric) , exiting ....")
+            result = True
     elif currentValue and not value:
         logging.debug("value is none! currentValue is not None, exiting ....")
         result = False
@@ -185,7 +186,7 @@ def compareVersion(listCurrentVer, listVer):
         logging.debug("current value = %s", currentValue)
         logging.debug("value = %s", value)
         """ If both are number """
-        if str(currentValue).isnumeric() and str(value).isnumeric():
+        if currentValue and currentValue.isnumeric() and value and value.isnumeric():
             logging.debug("Both are numerics")
             if int(currentValue) < int(value):
                 logging.debug("%s less than %s, exiting ....", currentValue, value)
@@ -219,7 +220,7 @@ def handle_file(operation):
         outFile = open(outFileName, "w")
         """ Check if the file is created """
         if not path.exists(outFileName):
-            print("Error: Unable to create ", filename, "file!")
+            print(f"Error: Unable to create '{filename}' file!")
             exit(1)
         else:
             length = len(versions_found_str)
@@ -237,7 +238,7 @@ def handle_file(operation):
             os.remove(outFileName)
             """ Check if the file is removed """
             if path.exists(outFileName):
-                print("Error: Unable to remove ", filename, "file!")
+                print(f"Error: Unable to remove '{filename}' file!")
                 exit(1)
 
 def create_new_list():
@@ -267,6 +268,13 @@ def check_input(p_ver):
         exit(1)
     """ Current version """
     if currentver:
+        """ Check last character. It could end with 'separator' character .... """
+        last_chr = currentver[len(currentver) - 1]
+        if not last_chr.isdigit() and not last_chr.isalpha():
+            print(f"Error: '{currentver}'")
+            print("The software version can't end with a non-alphanumeric character!")
+            exit(1)
+        """ Splitting the currentver and check if every value which compose it is well-formed """
         version_list = currentver.split(separator)
         logging.debug("current version list = %s", version_list)
         for i in range(len(version_list)):
@@ -274,21 +282,16 @@ def check_input(p_ver):
             logging.debug("value = %s", value)
             logging.debug("value[0] = %s", value[0])
             """ Check first character """
-            if not str(value[0]).isdigit():
+            if not value[0].isdigit():
                 print(f"Error: '{currentver}' --> '{value}'")
                 print("The values which compose the software version can't start with a non-numeric character!")
                 exit(1)
             """ Check weird characters """
             for j in range(len(value)):
-                if not str(value[j]).isdigit() and not str(value[j]).isalpha():
+                if not value[j].isdigit() and not value[j].isalpha():
                     print(f"Error: '{currentver}' --> '{value}'")
                     print("The values which compose the software version can only contain numbers and letters!")
                     exit(1)
-        """ Check last character """
-        if not str(currentver[len(currentver) - 1]).isdigit() and not str(currentver[len(currentver) - 1]).isalpha():
-            print(f"Error: '{currentver}'")
-            print("The software version can't end with a non-alphanumeric character!")
-            exit(1)
         """ Check regex """
         re_currentver = p_ver.match(currentver)
         if not re_currentver:
