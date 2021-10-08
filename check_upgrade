@@ -243,12 +243,14 @@ def handle_file(operation):
 
 def create_new_list():
     version = ""
-    for i in range(len(versions_found)):
+    len_version_found = len(versions_found)
+    for i in range(len_version_found):
         version = versions_found[i]
+        len_version = len(version)
         value = ""
-        for j in range(len(version)):
+        for j in range(len_version):
             value += version[j]
-            if j < (len(version) - 1):
+            if j < (len_version - 1):
                 value += separator
         versions_found_str.append(value)
 
