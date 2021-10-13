@@ -2,7 +2,7 @@
 <services>
     <service name="check_upgrade">
         <param name="urlsrc">https://archive.eclipse.org/eclipse/downloads/</param>
-        <param name="regexurl">^drops[\w]*/R-[\d]+[.][\w]*[.]*[\w]*-[\w]+/$</param>
+        <param name="regexurl">drops[\w]*/R-[\d]+[.][\w]*[.]*[\w]*-[\w]+/</param>
         <param name="regexver">[\d]+[.][\w]*[.]*[\w]*</param>
         <param name="currentver">4.7.3</param>
     </service>
@@ -11,7 +11,7 @@
 <services>
     <service name="check_upgrade">
         <param name="urlsrc">https://github.com/openSUSE/open-build-service/releases</param>
-        <param name="regexurl">^/openSUSE/open-build-service/archive/refs/tags/[\d].[\d]+.[\d]+.tar.gz$</param>
+        <param name="regexurl">/openSUSE/open-build-service/archive/refs/tags/[\d].[\d]+.[\d]+.tar.gz</param>
         <param name="regexver">[\d].[\d]+.[\d]+</param>
         <param name="currentver">2.8.0</param>
     </service>
@@ -29,7 +29,7 @@
 <services>
     <service name="check_upgrade">
         <param name="urlsrc">https://pypi.org/project/github-api-python/#history</param>
-        <param name="regexurl">^/project/github-api-python/[\d]+[\w]*(.[\d]+[\w]*)?(.[\d]+[\w]*)?/$</param>
+        <param name="regexurl">/project/github-api-python/[\d]+[\w]*(.[\d]+[\w]*)?(.[\d]+[\w]*)?/</param>
         <param name="regexver">[\d]+[\w]*(.[\d]+[\w]*)?(.[\d]+[\w]*)?</param>
         <param name="currentver">0.1.1a</param>
     </service>
@@ -83,14 +83,22 @@
     </service>
 </services>
 
+<services>
+	<service name="check_upgrade">
+        <param name="urlsrc">https://github.com/justjanne/powerline-go/releases</param>
+        <param name="regexurl">/justjanne/powerline-go/archive/refs/tags/v[\d]+.[\d]+.[\d]+.tar.gz</param>
+        <param name="regexver">[\d]+.[\d]+.[\d]+</param>
+        <param name="currentver">1.19.0</param>
+    </service>
+</services>
+
 -->
 
 <services>
     <service name="check_upgrade">
-        <param name="urlsrc">https://github.com/seebye/ueberzug/releases</param>
-        <param name="regexurl">/seebye/ueberzug/archive/refs/tags/[\d]+.[\d]+.[\d].tar.gz</param>>
-        <param name="regexver">[\d]+.[\d]+.[\d]</param>
-        <param name="currentver">18.1.7</param>
+        <param name="urlsrc">https://github.com/openSUSE/open-build-service/releases</param>
+        <param name="regexurl">/openSUSE/open-build-service/archive/refs/tags/[\d].[\d]+.[\d]+.tar.gz</param>
+        <param name="regexver">[\d].[\d]+.[\d]+</param>
+        <param name="currentver">2.8.0</param>
     </service>
 </services>
-
