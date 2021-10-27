@@ -16,5 +16,8 @@
   <parameter name="separator">
     <description>Set the character which separates the values (major version, minor version ...) in the string which makes up the package version.</description>
   </parameter>
+  <parameter name="debug">
+    <description>Set debug mode</description>
+  </parameter>
 </service>
 

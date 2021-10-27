@@ -26,11 +26,13 @@ regexurl = None
 regexver = None
 currentver = None
 separator = None
+debug = None
 outdir = None
 all_versions = []
 versions_found = []
 versions_found_str = []
 filename = "newer_versions"
+standalone = False
 
 """ Classes and methods """
 class MyHTMLParser(HTMLParser):
@@ -265,10 +267,6 @@ def sort_versions():
                 versions_found[j + 1] = versions_found_swap
 
 def check_input(p_ver):
-    """ Outdir """
-    if not outdir:
-        print("Error: no outdir specified!")
-        exit(1)
     """ Current version """
     if currentver:
         """ Check last character. It could end with 'separator' character .... """
@@ -307,8 +305,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Open Build Service source service "check_upgrade".'
         'Used to retrieve the newer versions of a package starting from current.')
-    parser.add_argument('--outdir', required=True,
-                        help='output directory of the package')
+    parser.add_argument('--outdir', help='output directory of the package')
     parser.add_argument('--urlsrc', required=True,
                         help='The url which has to parsed')
     parser.add_argument('--regexurl', required=True,
@@ -320,16 +317,21 @@ if __name__ == '__main__':
     parser.add_argument('--separator', default='.',
                         help='the character which separates the values (major version, minor version, etc ...) in '
                         'the string which makes up the package version')
+    parser.add_argument('--debug', default='false',
+                        help='Set debug mode')
     args = vars(parser.parse_args())
 
+    #Get input parameters
     outdir = args['outdir']
+    if not outdir or outdir == '':
+        standalone = True
     urlsrc = args['urlsrc']
     regexurl = args['regexurl']
     regexver = args['regexver']
     currentver = args['currentver']
     separator = args['separator']
-
-    if os.environ.get('DEBUG_CHECK_UPGRADE') == "1":
+    debug = args['debug']
+    if debug == 'true':
         logging.getLogger().setLevel(logging.DEBUG)
 
     logging.debug("outdir = %s", outdir)
@@ -348,7 +350,7 @@ if __name__ == '__main__':
 
     """ GET Http request """
     headers = {'Accept': 'text/html'}
-    print("Executing the http get request for \"" + urlsrc + "\" ....\n")
+    logging.debug("Executing the http get request for \"" + urlsrc + "\" ....\n")
     response = requests.get(urlsrc, headers=headers)
     logging.debug("Http response = %s", response.text)
     logging.debug("Http response status code = %s", response.status_code)
@@ -357,14 +359,15 @@ if __name__ == '__main__':
         exit(1)
 
     """ Delete 'filename' file if exists """
-    handle_file("remove")
+    if not standalone:
+        handle_file("remove")
 
     """ Parsing the response extracting the data according 'regexurl' pattern """
     parser = MyHTMLParser(p_url, p_ver)
-    print("Parsing the http response ....")
+    logging.debug("Parsing the http response ....")
     parser.feed(response.text);
     if len(all_versions) == 0:
-        print("\nNothing found! Check the 'urlsrc' and 'regexurl' parameters values.")
+        logging.debug("\nNothing found! Check the 'urlsrc' and 'regexurl' parameters values.")
     else:
         logging.debug("\n\nThe following versions have been found = \n%s", all_versions)
         """ Let's go to find newer versions """
@@ -375,12 +378,13 @@ if __name__ == '__main__':
         """ Create a list of one string """
         create_new_list()
         """ Print all the newer versions than current version """
-        print("\nCurrent version :", currentver)
+        logging.debug("Current version : %s", currentver)
         if len(versions_found_str) > 0:
-            print("Available the following versions for upgrade :")
+            logging.debug("Available the following versions for upgrade :")
             for i in range(len(versions_found_str)):
                 print(versions_found_str[i])
             """ Create the 'filename' file """
-            handle_file("create")
+            if not standalone:
+                handle_file("create")
         else:
-            print("There are no newer versions!")
+            logging.debug("There are no newer versions!")
