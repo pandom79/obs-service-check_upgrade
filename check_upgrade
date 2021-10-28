@@ -395,9 +395,8 @@ if __name__ == '__main__':
                     logging.debug("Available the following versions for upgrade :")
                     for i in range(len(versions_found_str)):
                         print(versions_found_str[i])
-                    """ Create the 'filename' file """
-                    if not standalone:
-                        create_file(None)
+                    """ Create the 'filename' file if it's performed like obs service"""
+                    create_file(None)
                 else:
                     logging.debug("There are no newer versions!")
 
