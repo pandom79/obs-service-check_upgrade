@@ -269,45 +269,45 @@ def sort_versions():
                 versions_found[j + 1] = versions_found_swap
 
 def check_input(p_ver):
+    error = None
     """ Current version """
     if currentver:
         """ Check last character. It could end with 'separator' character .... """
         last_chr = currentver[len(currentver) - 1]
         if not last_chr.isdigit() and not last_chr.isalpha():
             error = f"Error: '{currentver}'. The software version can't end with a non-alphanumeric character!"
-            print(error)
-            create_file(error)
-            return False
-        """ Splitting the currentver and check if every value which compose it is well-formed """
-        version_list = currentver.split(separator)
-        logging.debug("current version list = %s", version_list)
-        for i in range(len(version_list)):
-            value = version_list[i]
-            logging.debug("value = %s", value)
-            logging.debug("value[0] = %s", value[0])
-            """ Check first character """
-            if not value[0].isdigit():
-                error = f"Error: '{currentver}' --> '{value}'\n"
-                error += "The values which compose the software version can't start with a non-numeric character!"
-                print(error)
-                create_file(error)
-                return False
-            """ Check weird characters """
-            for j in range(len(value)):
-                if not value[j].isdigit() and not value[j].isalpha():
+        if not error:
+            """ Splitting the currentver and check if every value which compose it is well-formed """
+            version_list = currentver.split(separator)
+            logging.debug("current version list = %s", version_list)
+            for i in range(len(version_list)):
+                if error:
+                    break
+                value = version_list[i]
+                logging.debug("value = %s", value)
+                logging.debug("value[0] = %s", value[0])
+                """ Check first character """
+                if not value[0].isdigit():
                     error = f"Error: '{currentver}' --> '{value}'\n"
-                    error += "The values which compose the software version can only contain numbers and letters!"
-                    print(error)
-                    create_file(error)
-                    return False
+                    error += "The values which compose the software version can't start with a non-numeric character!"
+                    break
+                """ Check weird characters """
+                for j in range(len(value)):
+                    if not value[j].isdigit() and not value[j].isalpha():
+                        error = f"Error: '{currentver}' --> '{value}'\n"
+                        error += "The values which compose the software version can only contain numbers and letters!"
+                        break
         """ Check regex """
-        re_currentver = p_ver.match(currentver)
-        if not re_currentver:
-            error = f"Error : The current version '{currentver}' doesn't match the regex pattern '{regexver}'!"
-            print(error)
-            create_file(error)
-            return False
-    return True
+        if not error:
+            re_currentver = p_ver.match(currentver)
+            if not re_currentver:
+                error = f"Error : The current version '{currentver}' doesn't match the regex pattern '{regexver}'!"
+    if error:
+        print(error)
+        create_file(error)
+        return False
+    else:
+        return True
 
 """ Main """
 if __name__ == '__main__':
