@@ -32,6 +32,7 @@ all_versions = []
 versions_found = []
 versions_found_str = []
 filename = "newer_versions"
+filename_err = "error"
 standalone = False
 
 """ Classes and methods """
@@ -217,31 +218,32 @@ def findNextVersions():
             logging.debug("Adding %s to the versions found ", listVer)
             versions_found.append(listVer)
 
-def handle_file(operation):
-    outFileName = path.abspath(outdir + "//" + filename)
-    if operation == "create":
+def create_file(error_str):
+    #Create the file only if it is performed like "obs service"
+    if not standalone:
+        if not error_str:
+            outFileName = path.abspath(outdir + "//" + filename)
+        else:
+            outFileName = path.abspath(outdir + "//" + filename_err)
         outFile = open(outFileName, "w")
         """ Check if the file is created """
         if not path.exists(outFileName):
-            print(f"Error: Unable to create '{filename}' file!")
+            print(f"Error: Unable to create '{outFileName}' file!")
             exit(1)
         else:
-            length = len(versions_found_str)
-            for i in range(length):
-                outFile.write(versions_found_str[i])
-                if i < (length - 1):
-                    outFile.write("\n")
-            outFile.close()
+            if not error_str:
+                length = len(versions_found_str)
+                for i in range(length):
+                    outFile.write(versions_found_str[i])
+                    if i < (length - 1):
+                        outFile.write("\n")
+                outFile.close()
+            else:
+                outFile.write(error_str)
+                outFile.close()
             """ Check if the file is closed """
             if not outFile.closed:
-                print(f"Error: Unable to close '{filename}' file!")
-                exit(1)
-    elif operation == "remove":
-        if path.exists(outFileName):
-            os.remove(outFileName)
-            """ Check if the file is removed """
-            if path.exists(outFileName):
-                print(f"Error: Unable to remove '{filename}' file!")
+                print(f"Error: Unable to close '{outFileName}' file!")
                 exit(1)
 
 def create_new_list():
@@ -272,9 +274,10 @@ def check_input(p_ver):
         """ Check last character. It could end with 'separator' character .... """
         last_chr = currentver[len(currentver) - 1]
         if not last_chr.isdigit() and not last_chr.isalpha():
-            print(f"Error: '{currentver}'")
-            print("The software version can't end with a non-alphanumeric character!")
-            exit(1)
+            error = f"Error: '{currentver}'. The software version can't end with a non-alphanumeric character!"
+            print(error)
+            create_file(error)
+            return False
         """ Splitting the currentver and check if every value which compose it is well-formed """
         version_list = currentver.split(separator)
         logging.debug("current version list = %s", version_list)
@@ -284,27 +287,34 @@ def check_input(p_ver):
             logging.debug("value[0] = %s", value[0])
             """ Check first character """
             if not value[0].isdigit():
-                print(f"Error: '{currentver}' --> '{value}'")
-                print("The values which compose the software version can't start with a non-numeric character!")
-                exit(1)
+                error = f"Error: '{currentver}' --> '{value}'\n"
+                error += "The values which compose the software version can't start with a non-numeric character!"
+                print(error)
+                create_file(error)
+                return False
             """ Check weird characters """
             for j in range(len(value)):
                 if not value[j].isdigit() and not value[j].isalpha():
-                    print(f"Error: '{currentver}' --> '{value}'")
-                    print("The values which compose the software version can only contain numbers and letters!")
-                    exit(1)
+                    error = f"Error: '{currentver}' --> '{value}'\n"
+                    error += "The values which compose the software version can only contain numbers and letters!"
+                    print(error)
+                    create_file(error)
+                    return False
         """ Check regex """
         re_currentver = p_ver.match(currentver)
         if not re_currentver:
-            print(f"Error : The current version '{currentver}' doesn't match the regex pattern '{regexver}'!")
-            exit(1)
+            error = f"Error : The current version '{currentver}' doesn't match the regex pattern '{regexver}'!"
+            print(error)
+            create_file(error)
+            return False
+    return True
 
 """ Main """
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
         description='Open Build Service source service "check_upgrade".'
-        'Used to retrieve the newer versions of a package starting from current.')
+                    'Used to retrieve the newer versions of a package starting from current.')
     parser.add_argument('--outdir', help='output directory of the package')
     parser.add_argument('--urlsrc', required=True,
                         help='The url which has to parsed')
@@ -316,14 +326,14 @@ if __name__ == '__main__':
                         help='the current version which pattern have to match <regexver> value')
     parser.add_argument('--separator', default='.',
                         help='the character which separates the values (major version, minor version, etc ...) in '
-                        'the string which makes up the package version')
+                             'the string which makes up the package version')
     parser.add_argument('--debug', default='false',
                         help='Set debug mode')
     args = vars(parser.parse_args())
 
-    #Get input parameters
+    # Get input parameters
     outdir = args['outdir']
-    if not outdir or outdir == '':
+    if not outdir or len(outdir) == 0:
         standalone = True
     urlsrc = args['urlsrc']
     regexurl = args['regexurl']
@@ -346,45 +356,48 @@ if __name__ == '__main__':
 
     """ Check input values """
     logging.debug("\n\nChecking input values ....")
-    check_input(p_ver)
-
-    """ GET Http request """
-    headers = {'Accept': 'text/html'}
-    logging.debug("Executing the http get request for \"" + urlsrc + "\" ....\n")
-    response = requests.get(urlsrc, headers=headers)
-    logging.debug("Http response = %s", response.text)
-    logging.debug("Http response status code = %s", response.status_code)
-    if (response.status_code == 404):
-        print(f"Error: Unable to contact the url '{urlsrc}'.\nCheck 'urlsrc' parameter value.")
-        exit(1)
-
-    """ Delete 'filename' file if exists """
-    if not standalone:
-        handle_file("remove")
-
-    """ Parsing the response extracting the data according 'regexurl' pattern """
-    parser = MyHTMLParser(p_url, p_ver)
-    logging.debug("Parsing the http response ....")
-    parser.feed(response.text);
-    if len(all_versions) == 0:
-        logging.debug("\nNothing found! Check the 'urlsrc' and 'regexurl' parameters values.")
-    else:
-        logging.debug("\n\nThe following versions have been found = \n%s", all_versions)
-        """ Let's go to find newer versions """
-        findNextVersions()
-        """ Sorting versions """
-        logging.debug("\n\nSorting the versions ...")
-        sort_versions()
-        """ Create a list of one string """
-        create_new_list()
-        """ Print all the newer versions than current version """
-        logging.debug("Current version : %s", currentver)
-        if len(versions_found_str) > 0:
-            logging.debug("Available the following versions for upgrade :")
-            for i in range(len(versions_found_str)):
-                print(versions_found_str[i])
-            """ Create the 'filename' file """
-            if not standalone:
-                handle_file("create")
+    if check_input(p_ver):
+        """ GET Http request """
+        headers = {'Accept': 'text/html'}
+        logging.debug("Executing the http get request for \"" + urlsrc + "\" ....\n")
+        try:
+            response = requests.get(urlsrc, headers=headers, timeout=10)
+            logging.debug("Http response = %s", response.text)
+            logging.debug("Http response status code = %s", response.status_code)
+        except:
+            response = None
+            logging.debug("Http response is None!")
+        if not response or response.status_code == 404:
+            error = f"Error: Unable to contact the url '{urlsrc}'.\nCheck 'urlsrc' parameter value."
+            print(error)
+            create_file(error)
         else:
-            logging.debug("There are no newer versions!")
+            """ Parsing the response extracting the data according 'regexurl' pattern """
+            parser = MyHTMLParser(p_url, p_ver)
+            logging.debug("Parsing the http response ....")
+            parser.feed(response.text);
+            if len(all_versions) == 0:
+                error = "Error: nothing found! Check the 'regexurl' parameter value."
+                print(error)
+                create_file(error)
+            else:
+                logging.debug("\n\nThe following versions have been found = \n%s", all_versions)
+                """ Let's go to find newer versions """
+                findNextVersions()
+                """ Sorting versions """
+                logging.debug("\n\nSorting the versions ...")
+                sort_versions()
+                """ Create a list of one string """
+                create_new_list()
+                """ Print all the newer versions than current version """
+                logging.debug("Current version : %s", currentver)
+                if len(versions_found_str) > 0:
+                    logging.debug("Available the following versions for upgrade :")
+                    for i in range(len(versions_found_str)):
+                        print(versions_found_str[i])
+                    """ Create the 'filename' file """
+                    if not standalone:
+                        create_file(None)
+                else:
+                    logging.debug("There are no newer versions!")
+
