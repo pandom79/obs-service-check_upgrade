@@ -313,22 +313,22 @@ def check_input(p_ver):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-        description='Open Build Service source service "check_upgrade".'
+        description='Open Build Service source service "check_upgrade". '
                     'Used to retrieve the newer versions of a package starting from current.')
     parser.add_argument('--outdir', help='output directory of the package')
     parser.add_argument('--urlsrc', required=True,
-                        help='The url which has to parsed')
+                        help='the url which has to parsed')
     parser.add_argument('--regexurl', required=True,
-                        help='The regular expression which extracts the versions data')
+                        help='the regular expression which extracts the versions data')
     parser.add_argument('--regexver', required=True,
-                        help='The regular expression which extracts the package version')
+                        help='the regular expression which extracts the package version')
     parser.add_argument('--currentver', required=True,
                         help='the current version which pattern have to match <regexver> value')
     parser.add_argument('--separator', default='.',
                         help='the character which separates the values (major version, minor version, etc ...) in '
                              'the string which makes up the package version')
     parser.add_argument('--debug', default='false',
-                        help='Set debug mode')
+                        help='set debug mode')
     args = vars(parser.parse_args())
 
     # Get input parameters
@@ -393,10 +393,11 @@ if __name__ == '__main__':
                 logging.debug("Current version : %s", currentver)
                 if len(versions_found_str) > 0:
                     logging.debug("Available the following versions for upgrade :")
+                    print("Available the following versions for upgrade :")
                     for i in range(len(versions_found_str)):
                         print(versions_found_str[i])
                     """ Create the 'filename' file if it's performed like obs service"""
                     create_file(None)
                 else:
-                    logging.debug("There are no newer versions!")
+                    print("The package is up to date")
 
