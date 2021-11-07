@@ -285,9 +285,10 @@ def check_input(p_ver):
                     break
                 value = version_list[i]
                 logging.debug("value = %s", value)
-                logging.debug("value[0] = %s", value[0])
+                if len(value) > 0:
+                    logging.debug("value[0] = %s", value[0])
                 """ Check first character """
-                if not value[0].isdigit():
+                if len(value) > 0 and not value[0].isdigit():
                     error = f"Error: '{currentver}' --> '{value}'\n"
                     error += "The values which compose the software version can't start with a non-numeric character!"
                     break
