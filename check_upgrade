@@ -392,11 +392,14 @@ if __name__ == '__main__':
                 create_new_list()
                 """ Print all the newer versions than current version """
                 logging.debug("Current version : %s", currentver)
-                if len(versions_found_str) > 0:
-                    logging.debug("Available the following versions for upgrade :")
-                    print("Available the following versions for upgrade :")
-                    for i in range(len(versions_found_str)):
-                        print(versions_found_str[i])
+                len_versions_found_str = len(versions_found_str)
+                if len_versions_found_str > 0:
+                    return_str = "Available the following versions for upgrade: "
+                    for i in range(len_versions_found_str):
+                        return_str += "\"" + versions_found_str[i] + "\""
+                        if i < (len_versions_found_str - 1):
+                            return_str += " - "
+                    print(return_str)
                     """ Create the 'filename' file if it's performed like obs service"""
                     create_file(None)
                 else:
