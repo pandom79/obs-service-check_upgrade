@@ -68,16 +68,24 @@ class MyHTMLParser(HTMLParser):
                 logging.debug("Match url! %s", self.p_url.findall(data))
                 urls = self.p_url.findall(data)
                 for i in range(len(urls)):
-                    url = self.p_ver.search(urls[i]).group()
-                    if self.p_ver.search(url) is not None:
-                        version = self.p_ver.search(url).group()
-                        logging.debug("Match ver! %s", version)
-                        if version not in all_versions:
-                            logging.debug("%s not exists : append!", version)
-                            all_versions.append(version)
-                            logging.debug("all_versions : %s ", all_versions)
+                    url_obj = self.p_ver.search(urls[i])
+                    url = ""
+                    if url_obj:
+                        url = self.p_ver.search(urls[i]).group()
+                        version_obj = self.p_ver.search(url)
+                        if version_obj:
+                            version = self.p_ver.search(url).group()
+                            if version and len(version) > 0:
+                                logging.debug("Match ver! %s", version)
+                                if version not in all_versions:
+                                    logging.debug("%s not exists : append!", version)
+                                    all_versions.append(version)
+                                    logging.debug("all_versions : %s ", all_versions)
+                            else:
+                                print("Error in handle_data: Checks regexver parameter value")
+                                exit(1)
                     else:
-                        print("Error in handle_data: Checks regexurl and regexver parameters values")
+                        print("Error in handle_data: Checks regexurl parameter value")
                         exit(1)
 
 """ Functions """
