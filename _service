@@ -92,6 +92,16 @@
     </service>
 </services>
 
+
+<services>
+    <service name="check_upgrade">
+        <param name="urlsrc">https://www.sublimetext.com/download</param>
+        <param name="regexurl">Build [\d]+</param>
+        <param name="regexver">[\d]+</param>
+        <param name="currentver">4000</param>
+    </service>
+</services>
+
 -->
 
 <services>
