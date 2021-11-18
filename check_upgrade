@@ -37,7 +37,7 @@ standalone = False
 
 """ Classes and methods """
 class MyHTMLParser(HTMLParser):
-
+    error = False
     def __init__(self, p_url, p_ver):
         super(MyHTMLParser, self).__init__()
         self.p_url = p_url
@@ -58,11 +58,11 @@ class MyHTMLParser(HTMLParser):
                             all_versions.append(version)
                             logging.debug("all_versions : %s", all_versions)
                     else:
-                        print("Error in handle_starttag: Checks regexurl and regexver parameters values")
-                        exit(1)
+                        print("Error: Check regexurl and regexver parameters values")
+                        self.error = True
 
     def handle_data(self, data):
-        if data is not None:
+        if data is not None and not self.error:
             logging.debug("data = %s", data)
             if len(self.p_url.findall(data)) > 0:
                 logging.debug("Match url! %s", self.p_url.findall(data))
@@ -82,11 +82,13 @@ class MyHTMLParser(HTMLParser):
                                     all_versions.append(version)
                                     logging.debug("all_versions : %s ", all_versions)
                             else:
-                                print("Error in handle_data: Checks regexver parameter value")
-                                exit(1)
+                                print("Error: Check regexver parameter value")
+                                self.error = True
+                                break
                     else:
-                        print("Error in handle_data: Checks regexurl parameter value")
-                        exit(1)
+                        print("Error: Check regexurl parameter value")
+                        self.error = True
+                        break
 
 """ Functions """
 
@@ -297,20 +299,20 @@ def check_input(p_ver):
                     logging.debug("value[0] = %s", value[0])
                 """ Check first character """
                 if len(value) > 0 and not value[0].isdigit():
-                    error = f"Error: '{currentver}' --> '{value}'\n"
+                    error = f"Error: '{currentver}' --> '{value}'. "
                     error += "The values which compose the software version can't start with a non-numeric character!"
                     break
                 """ Check weird characters """
                 for j in range(len(value)):
                     if not value[j].isdigit() and not value[j].isalpha():
-                        error = f"Error: '{currentver}' --> '{value}'\n"
+                        error = f"Error: '{currentver}' --> '{value}'. "
                         error += "The values which compose the software version can only contain numbers and letters!"
                         break
         """ Check regex """
         if not error:
             re_currentver = p_ver.match(currentver)
             if not re_currentver:
-                error = f"Error : The current version '{currentver}' doesn't match the regex pattern '{regexver}'!"
+                error = f"Error: The current version '{currentver}' doesn't match the regex pattern '{regexver}'!"
     if error:
         print(error)
         create_file(error)
@@ -385,31 +387,31 @@ if __name__ == '__main__':
             parser = MyHTMLParser(p_url, p_ver)
             logging.debug("Parsing the http response ....")
             parser.feed(response.text);
-            if len(all_versions) == 0:
-                error = "Error: zero occurrences found! Check the 'regexurl' parameter value."
-                print(error)
-                create_file(error)
-            else:
-                logging.debug("\n\nThe following versions have been found = \n%s", all_versions)
-                """ Let's go to find newer versions """
-                findNextVersions()
-                """ Sorting versions """
-                logging.debug("\n\nSorting the versions ...")
-                sort_versions()
-                """ Create a list of one string """
-                create_new_list()
-                """ Print all the newer versions than current version """
-                logging.debug("Current version : %s", currentver)
-                len_versions_found_str = len(versions_found_str)
-                if len_versions_found_str > 0:
-                    return_str = "Available the following versions for upgrade: "
-                    for i in range(len_versions_found_str):
-                        return_str += "\"" + versions_found_str[i] + "\""
-                        if i < (len_versions_found_str - 1):
-                            return_str += " - "
-                    print(return_str)
-                    """ Create the 'filename' file if it's performed like obs service"""
-                    create_file(None)
+            if not parser.error:
+                if len(all_versions) == 0:
+                    error = "Error: zero occurrences found! Check the 'regexurl' parameter value."
+                    print(error)
+                    create_file(error)
                 else:
-                    print("The package is up to date")
-
+                    logging.debug("\n\nThe following versions have been found = \n%s", all_versions)
+                    """ Let's go to find newer versions """
+                    findNextVersions()
+                    """ Sorting versions """
+                    logging.debug("\n\nSorting the versions ...")
+                    sort_versions()
+                    """ Create a list of one string """
+                    create_new_list()
+                    """ Print all the newer versions than current version """
+                    logging.debug("Current version : %s", currentver)
+                    len_versions_found_str = len(versions_found_str)
+                    if len_versions_found_str > 0:
+                        return_str = "Available the following versions for upgrade: "
+                        for i in range(len_versions_found_str):
+                            return_str += "\"" + versions_found_str[i] + "\""
+                            if i < (len_versions_found_str - 1):
+                                return_str += " - "
+                        print(return_str)
+                        """ Create the 'filename' file if it's performed like obs service"""
+                        create_file(None)
+                    else:
+                        print("The package is up to date")
