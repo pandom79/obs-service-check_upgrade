@@ -377,7 +377,7 @@ if __name__ == '__main__':
             response = None
             logging.debug("Http response is None!")
         if not response or response.status_code == 404:
-            error = f"Error: Unable to contact the url '{urlsrc}'.\nCheck 'urlsrc' parameter value."
+            error = f"Error: Unable to contact the url '{urlsrc}'."
             print(error)
             create_file(error)
         else:
@@ -386,7 +386,7 @@ if __name__ == '__main__':
             logging.debug("Parsing the http response ....")
             parser.feed(response.text);
             if len(all_versions) == 0:
-                error = "Error: nothing found! Check the 'regexurl' parameter value."
+                error = "Error: zero occurrences found! Check the 'regexurl' parameter value."
                 print(error)
                 create_file(error)
             else:
