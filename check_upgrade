@@ -362,8 +362,18 @@ if __name__ == '__main__':
     logging.debug("currentver = %s", currentver)
     logging.debug("separator = %s", separator)
 
-    p_url = re.compile(regexurl)
-    p_ver = re.compile(regexver)
+    try:
+        p_url = re.compile(regexurl)
+    except Exception as e:
+        logging.debug(e)
+        print("Error: the 'regexurl' parameter value seems not valid")
+        exit(0)
+    try:
+        p_ver = re.compile(regexver)
+    except Exception as e:
+        logging.debug(e)
+        print("Error: the 'regexver' parameter value seems not valid")
+        exit(0)
 
     """ Check input values """
     logging.debug("\n\nChecking input values ....")
